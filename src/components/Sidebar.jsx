@@ -30,8 +30,12 @@ const Sidebar = () => {
     getUser();
   }, [setUserInfo]);
 
+  useEffect(() => setNav(window.location.pathname.split("/")[1]));
+
+  console.log(nav)
+
   const links = [
-    { name: "Dashboard", icon: FiHome, to: "/", key: "dashboard" },
+    { name: "Dashboard", icon: FiHome, to: "/", key: "" },
     { name: "Pitches", icon: FaLightbulb, to: "/pitches", key: "pitches" },
     { name: "Events", icon: FiCalendar, to: "/events", key: "events" },
     { name: "Businesses", icon: FaBuilding, to: "/businesses", key: "businesses" },
@@ -91,6 +95,7 @@ const Sidebar = () => {
                   color={nav === link.key ? "#25B161" : "gray"}
                   backgroundColor={nav === link.key ? "#E0FFED" : null}
                   border={nav === link.key ? "1px solid #25B161" : null}
+                  width={"220px"}
                 >
                   <Box display="flex" alignItems="center">
                     <Icon as={link.icon} mr="3" />
@@ -111,7 +116,7 @@ const Sidebar = () => {
                   to={link.to}
                   key={link.key}
                   {...linkStyle}
-                  onClick={() => setNav(link.key)}
+                  // onClick={() => setNav(link.key)}
                   color={nav === link.key ? "#25B161" : "gray"}
                   backgroundColor={nav === link.key ? "#E0FFED" : null}
                   border={nav === link.key ? "1px solid #25B161" : null}

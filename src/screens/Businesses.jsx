@@ -17,6 +17,8 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Spinner,
+  Center
 } from "@chakra-ui/react";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import { Link } from "react-router-dom";
@@ -29,6 +31,7 @@ const Businesses = () => {
   const [data, setData] = useState([]);
   const [pitch, setPitch] = useState([]);
   const { authState } = useAuth();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getData = async () => {
@@ -39,10 +42,20 @@ const Businesses = () => {
         console.log(response.data);
       } catch (error) {
         console.error("Failed to fetch metrics:", error);
+      } finally {
+        setLoading(false);
       }
     };
     getData();
   }, [authState.token]);
+
+  if (loading) {
+    return (
+      <Center height="100vh">
+        <Spinner size="xl" />
+      </Center>
+    );
+  }
 
 
   return (

@@ -23,6 +23,10 @@ export const AuthProvider = ({ children }) => {
   });
   const [user, setUser] = useState(JSON.parse(localStorage.getItem(USER_KEY)) || null);
 
+  const [nav, setNav] = useState("")
+
+  useEffect(()=>setNav("Dashboard"),[])
+
   // Set up Axios interceptor to attach token to requests
   useEffect(() => {
     const requestInterceptor = axi.interceptors.request.use((config) => {
@@ -60,7 +64,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ authState, setAuthInfo, user, setUserInfo }}>
+    <AuthContext.Provider value={{ authState, setAuthInfo, user, setUserInfo, nav, setNav }}>
       {children}
     </AuthContext.Provider>
   );

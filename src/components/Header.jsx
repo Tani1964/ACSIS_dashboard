@@ -88,9 +88,9 @@ const Header = () => {
                   {/* <MenuItem>
                   <a href="/profile">Profile</a>
                 </MenuItem> */}
-                  <MenuItem>
+                  {/* <MenuItem>
                     <BiBell /> <a href="/notifications">Notifications</a>
-                  </MenuItem>
+                  </MenuItem> */}
                   <MenuItem onClick={handleLogout}>
                     <BiLogOut /> Logout
                   </MenuItem>
