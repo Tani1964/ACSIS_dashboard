@@ -34,8 +34,21 @@ const Login = () => {
       } else {
         alert("You're not permitted to access this page");
       }
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      if (!error.response) {
+        // Network error
+        alert("Network error: Please check your internet connection.");
+      } else if (error.response.status === 401) {
+        // Reauthorization error
+        alert("Unauthorized: Invalid email or password.");
+      }else if (error.response.status === 422) {
+        // Reauthorization error
+        alert("Unauthorized: Invalid email or password.");
+      } else {
+        // Other errors
+        alert("An error occurred: " + error.response.data.message);
+      }
+      console.error("Failed to login:", error);
     } finally {
       setLoading(false); // Hide loader
     }
@@ -79,7 +92,7 @@ const Login = () => {
         </FormControl>
         <Flex justify="space-between" mb={6} width="100%">
           <Checkbox>Remember me</Checkbox>
-          <Button variant="link" colorScheme="teal">Forgot password?</Button>
+          {/* <Button variant="link" colorScheme="teal">Forgot password?</Button> */}
         </Flex>
         <Button colorScheme="green" width="100%" mb={3} onClick={handleLogin} isLoading={loading}>
           Sign in

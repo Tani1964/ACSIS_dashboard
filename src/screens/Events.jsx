@@ -77,7 +77,10 @@ const Events = () => {
   };
 
   const handleDateChange = (date) => {
-    setNewEvent({ ...newEvent, date: date.toISOString().split("T")[0] });
+    if (date) {
+      const dateString = date.format('YYYY-MM-DD'); // Ensure date format is correct
+      setNewEvent({ ...newEvent, date: dateString });
+    }
   };
 
   const handleTimeChange = (e) => {
@@ -113,13 +116,18 @@ const Events = () => {
   const handleAddEvent = async () => {
     try {
       const headers = { Authorization: `Bearer ${authState.token}` };
+      const combinedDateTime = new Date(`${newEvent.date}T${newEvent.time}`).toISOString();
+      
+      // Create event form data with combinedDateTime
       const formData = {
         ...newEvent,
         durationHours: parseInt(newEvent.durationHours),
-        dateTime: new Date(`${newEvent.date}T${newEvent.time}`).toISOString(),
+        dateTime: combinedDateTime,
       };
+  
       console.log(formData);
       await axi.post("/event/create-event", formData, { headers });
+      
       setEvents([...events, { ...newEvent, id: events.length + 1 }]);
       setNewEvent({
         title: "",
@@ -132,11 +140,14 @@ const Events = () => {
         sponsors: [],
         otherLinks: [],
       });
+      const response = await axi.get("/event/get-all-events", { headers });
+      setEvents(response.data);
       onClose();
     } catch (error) {
       console.error("Failed to add event:", error);
     }
   };
+  
 
   const handleDeleteEvent = async (eventId) => {
     try {

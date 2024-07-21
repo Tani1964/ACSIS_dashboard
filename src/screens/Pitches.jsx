@@ -19,6 +19,7 @@ import {
   MenuItem,
   Spinner,
   Center,
+  Select,
 } from "@chakra-ui/react";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
@@ -28,7 +29,9 @@ import { axi } from "../context/AuthContext";
 const Pitches = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [pitches, setPitches] = useState([]);
+  const [filteredPitches, setFilteredPitches] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
   const { authState } = useAuth();
   const navigate = useNavigate();
 
@@ -38,19 +41,31 @@ const Pitches = () => {
         const headers = { Authorization: `Bearer ${authState.token}` };
         const response = await axi.get("/admin/get-Pitches", { headers });
         setPitches(response.data);
+        setFilteredPitches(response.data);
         console.log(response.data);
       } catch (error) {
-        console.error("Failed to fetch metrics:", error);
+        if (!error.response) {
+          alert("Network error: Please check your internet connection.");
+        } else if (error.response.status === 401) {
+          alert("Unauthorized: Please log in again.");
+          navigate("/login");
+        } else {
+          alert("An error occurred: " + error.response.data.message);
+        }
+        console.error("Failed to fetch pitches:", error);
       } finally {
         setLoading(false);
       }
     };
     getPitches();
-  }, [authState.token]);
+  }, [authState.token, navigate]);
+
+  useEffect(() => {
+    applyFilter();
+  }, [filter, pitches]);
 
   const changeStatus = async (status, id) => {
     try {
-      console.log(id, status);
       const headers = { Authorization: `Bearer ${authState.token}` };
       await axi.patch(
         "/admin/review-pitch",
@@ -59,19 +74,48 @@ const Pitches = () => {
       );
       const response = await axi.get("/admin/get-Pitches", { headers });
       setPitches(response.data);
-    } catch (e) {
-      console.log(e);
+    } catch (error) {
+      if (!error.response) {
+        alert("Network error: Please check your internet connection.");
+      } else if (error.response.status === 401) {
+        alert("Unauthorized: Please log in again.");
+        navigate("/login");
+      } else {
+        alert("An error occurred: " + error.response.data.message);
+      }
+      console.error("Failed to change status:", error);
     }
   };
 
-  const viewPitch = (id, data) => {
-    const pitchData = {
-      personalInformation: data.personal_information,
-      professionalBackground: data.professional_background,
-      competitionQuestions: data.competition_questions,
-      technicalAgreement: data.technical_agreement,
-    };
+  const applyFilter = () => {
+    const now = new Date();
+    let filtered = pitches;
 
+    if (filter === "last-week") {
+      const oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
+      filtered = pitches.filter(pitch =>
+        new Date(pitch.review.updated_at) >= oneWeekAgo
+      );
+    } else if (filter === "month") {
+      const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
+      filtered = pitches.filter(pitch =>
+        new Date(pitch.review.updated_at) >= oneMonthAgo
+      );
+    } else if (filter === "year") {
+      const oneYearAgo = new Date(now.setFullYear(now.getFullYear() - 1));
+      filtered = pitches.filter(pitch =>
+        new Date(pitch.review.updated_at) >= oneYearAgo
+      );
+    }
+
+    setFilteredPitches(filtered);
+  };
+
+  const handleFilterChange = (event) => {
+    setFilter(event.target.value);
+  };
+
+  const viewPitch = (id, data) => {
     navigate(`/pitch/${id}`);
   };
 
@@ -92,8 +136,14 @@ const Pitches = () => {
         </Text>
         <Flex className="flex flex-row justify-between mt-5 py-4">
           <Text color={"grey"} fontWeight={20}>
-            {pitches.length} Pitches
+            {filteredPitches.length} Pitches
           </Text>
+          <Select value={filter} onChange={handleFilterChange} maxWidth="200px">
+            <option value="all">All</option>
+            <option value="last-week">Last Week</option>
+            <option value="month">Month</option>
+            <option value="year">Year</option>
+          </Select>
         </Flex>
       </Box>
 
@@ -118,13 +168,12 @@ const Pitches = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {pitches.map((data, index) => (
+            {filteredPitches.map((data, index) => (
               <Tr key={data.id}>
                 <Td>{index + 1}</Td>
                 <Td>{data.user.full_name}</Td>
                 <Td>{data.user.email}</Td>
                 <Td>
-                  {console.log(data.id)}
                   <Menu>
                     <MenuButton
                       onClick={onOpen}
