@@ -1,4 +1,4 @@
-import { Box, Heading, Text, Flex, Card } from "@chakra-ui/react";
+import { Box, Heading, Text, Flex, Card, Spinner, Center } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { axi } from "../context/AuthContext";
 import { useAuth } from "../context/AuthContext";
@@ -13,21 +13,33 @@ import {
   BarElement,
   BarController,
 } from 'chart.js';
+import { Navigate, useNavigate } from "react-router-dom";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, BarController);
 
 const Dashboard = () => {
   const { authState } = useAuth();
   const [metrics, setMetrics] = useState({});
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
 
   useEffect(() => {
+    if (!authState.token) {
+      navigate("/login")
+    }
     const getMetrics = async () => {
       try {
         const headers = { Authorization: `Bearer ${authState.token}` };
         const response = await axi.get("/admin/get-Metrics", { headers });
         setMetrics(response.data);
       } catch (error) {
-        console.error("Failed to fetch metrics:", error);
+        if (error.response && error.response.status === 401) {
+          navigate("/login");
+        } else {
+          console.error("Failed to fetch metrics:", error.message);
+        }
+      } finally {
+        setLoading(false);
       }
     };
     getMetrics();
@@ -38,7 +50,6 @@ const Dashboard = () => {
     datasets: [
       {
         data: [metrics.approvedPitches || 0, metrics.pendingReviews || 0, metrics.declinedPitches || 0],
-        // data: [40, 90, 100],
         backgroundColor: ["#48BB78", "#ED8936", "#F56565"],
         hoverBackgroundColor: ["#9AE6B4", "#FBD38D", "#FEB2B2"],
       },
@@ -51,13 +62,20 @@ const Dashboard = () => {
       {
         label: 'Users Metrics',
         data: [metrics.totalUsers || 0, metrics.totalBusinesses || 0, metrics.totalPitches || 0],
-        // data: [40, 90, 100],
         backgroundColor: ['grey', 'green', 'yellow'],
         borderColor: ['grey', 'green', 'yellow'],
         borderWidth: 0.5,
       },
     ],
   };
+
+  if (loading) {
+    return (
+      <Center height="100vh">
+        <Spinner size="xl" />
+      </Center>
+    );
+  }
 
   return (
     <Box px={4} overflowY="hidden" height="100vh">
@@ -91,7 +109,7 @@ const Dashboard = () => {
           <Text fontWeight="bold" fontSize="xl">{metrics.declinedPitches}</Text>
         </Box>
       </Flex>
-      <Flex  height="40vh" mt={4} justify="space-around">
+      <Flex height="40vh" mt={4} justify="space-around">
         <Card w="45%">
           <Doughnut data={doughnutChartData} />
         </Card>

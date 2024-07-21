@@ -1,14 +1,16 @@
-import { Box, Flex, Image, Input, Button, Heading, FormControl, FormLabel, FormErrorMessage, Text, Checkbox } from "@chakra-ui/react";
+import { Box, Flex, Image, Input, Button, Heading, FormControl, FormLabel, FormErrorMessage, Text, Checkbox, Spinner } from "@chakra-ui/react";
 import { useState } from "react";
 import LeftImg from "../assets/images/Frame 3.svg"; // replace with the appropriate image path
 import { axi } from "../context/AuthContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Logo from "../assets/images/logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false); // Add loading state
   const { setAuthInfo, setUserInfo } = useAuth();
   const navigate = useNavigate();
 
@@ -19,6 +21,8 @@ const Login = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) return;
+
+    setLoading(true); // Show loader
 
     try {
       const formData = { email, password };
@@ -32,6 +36,8 @@ const Login = () => {
       }
     } catch (e) {
       console.log(e);
+    } finally {
+      setLoading(false); // Hide loader
     }
   };
 
@@ -47,7 +53,6 @@ const Login = () => {
         borderRight="1px solid #E2E8F0"
       >
         <Box mb={6} textAlign="center">
-          <Image src="path-to-your-logo.png" alt="Logo" mb={4} /> {/* Replace with your logo path */}
           <Heading size="lg" mb={2}>Sign in</Heading>
           <Text>Please enter your details to sign in</Text>
         </Box>
@@ -76,11 +81,8 @@ const Login = () => {
           <Checkbox>Remember me</Checkbox>
           <Button variant="link" colorScheme="teal">Forgot password?</Button>
         </Flex>
-        <Button colorScheme="green" width="100%" mb={3} onClick={handleLogin}>
+        <Button colorScheme="green" width="100%" mb={3} onClick={handleLogin} isLoading={loading}>
           Sign in
-        </Button>
-        <Button variant="outline" colorScheme="gray" width="100%" leftIcon={<Image src="path-to-google-icon.png" alt="Google" />}> {/* Replace with Google icon path */}
-          Sign in with Google
         </Button>
       </Flex>
       <Flex flex="1" align="center" justify="center" p={8} bg="gray.50">

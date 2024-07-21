@@ -21,11 +21,13 @@ import Technical from "./screens/Technical"
 const isAuthenticated = () => {
   // Replace this with your actual authentication logic
   const {authState} = useAuth();
-  return authState.authenticated;
+  console.log(authState.token)
+  return authState.token? true : false;
 };
 
 const ProtectedRoute = ({ element }) => {
   console.log(isAuthenticated())
+  
   return isAuthenticated() ? element : <Navigate to="/login" />;
 };
 

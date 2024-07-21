@@ -17,17 +17,18 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Spinner,
+  Center,
 } from "@chakra-ui/react";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { axi } from "../context/AuthContext";
 
-
-
 const Pitches = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [pitches, setPitches] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { authState } = useAuth();
   const navigate = useNavigate();
 
@@ -40,6 +41,8 @@ const Pitches = () => {
         console.log(response.data);
       } catch (error) {
         console.error("Failed to fetch metrics:", error);
+      } finally {
+        setLoading(false);
       }
     };
     getPitches();
@@ -56,13 +59,12 @@ const Pitches = () => {
       );
       const response = await axi.get("/admin/get-Pitches", { headers });
       setPitches(response.data);
-
     } catch (e) {
       console.log(e);
     }
   };
 
-  const viewPitch =(id, data)=>{
+  const viewPitch = (id, data) => {
     const pitchData = {
       personalInformation: data.personal_information,
       professionalBackground: data.professional_background,
@@ -70,8 +72,15 @@ const Pitches = () => {
       technicalAgreement: data.technical_agreement,
     };
 
-    // navigate(`/pitch/${id}`, { state: { pitchData } });
     navigate(`/pitch/${id}`);
+  };
+
+  if (loading) {
+    return (
+      <Center height="100vh">
+        <Spinner size="xl" />
+      </Center>
+    );
   }
 
   return (
@@ -147,12 +156,12 @@ const Pitches = () => {
                     </MenuList>
                   </Menu>
                 </Td>
-                <Td>{data.review.reviewer_name|| "Not yet reveiwed"}</Td>
-                <Td>{new Date(
-              data.review.updated_at
-            ).toLocaleDateString()}</Td>
+                <Td>{data.review.reviewer_name || "Not yet reviewed"}</Td>
                 <Td>
-                  <Button  onClick={()=> viewPitch(data.id, data)}>
+                  {new Date(data.review.updated_at).toLocaleDateString()}
+                </Td>
+                <Td>
+                  <Button onClick={() => viewPitch(data.id, data)}>
                     View Pitch
                   </Button>
                 </Td>

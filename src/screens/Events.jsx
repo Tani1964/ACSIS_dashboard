@@ -24,6 +24,8 @@ import {
   FormLabel,
   Textarea,
   IconButton,
+  Spinner,
+  Center,
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
@@ -37,6 +39,7 @@ const Events = () => {
   const { authState } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newEvent, setNewEvent] = useState({
     title: "",
     description: "",
@@ -58,9 +61,11 @@ const Events = () => {
         const headers = { Authorization: `Bearer ${authState.token}` };
         const response = await axi.get("/event/get-all-events", { headers });
         setEvents(response.data);
-        console.log(response.data)
+        console.log(response.data);
       } catch (error) {
         console.error("Failed to fetch events:", error);
+      } finally {
+        setLoading(false);
       }
     };
     getEvents();
@@ -113,7 +118,7 @@ const Events = () => {
         durationHours: parseInt(newEvent.durationHours),
         dateTime: new Date(`${newEvent.date}T${newEvent.time}`).toISOString(),
       };
-      console.log(formData)
+      console.log(formData);
       await axi.post("/event/create-event", formData, { headers });
       setEvents([...events, { ...newEvent, id: events.length + 1 }]);
       setNewEvent({
@@ -142,6 +147,14 @@ const Events = () => {
       console.error("Failed to delete event:", error);
     }
   };
+
+  if (loading) {
+    return (
+      <Center height="100vh">
+        <Spinner size="xl" />
+      </Center>
+    );
+  }
 
   return (
     <Box px={6} py={4}>
@@ -181,7 +194,6 @@ const Events = () => {
                 <Td>{event.title}</Td>
                 <Td>{event.location}</Td>
                 <Td>{new Date(event.date_time).toLocaleDateString()}</Td>
-                
                 <Td>
                   {new Date(event.date_time).toLocaleTimeString([], {
                     hour: "2-digit",
