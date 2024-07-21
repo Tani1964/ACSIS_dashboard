@@ -92,17 +92,20 @@ const Pitches = () => {
     let filtered = pitches;
 
     if (filter === "last-week") {
-      const oneWeekAgo = new Date(now.setDate(now.getDate() - 7));
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(now.getDate() - 7);
       filtered = pitches.filter(pitch =>
         new Date(pitch.review.updated_at) >= oneWeekAgo
       );
     } else if (filter === "month") {
-      const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(now.getMonth() - 1);
       filtered = pitches.filter(pitch =>
         new Date(pitch.review.updated_at) >= oneMonthAgo
       );
     } else if (filter === "year") {
-      const oneYearAgo = new Date(now.setFullYear(now.getFullYear() - 1));
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(now.getFullYear() - 1);
       filtered = pitches.filter(pitch =>
         new Date(pitch.review.updated_at) >= oneYearAgo
       );

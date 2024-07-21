@@ -109,11 +109,13 @@ const Dashboard = () => {
           <Text fontWeight="bold" fontSize="xl">{metrics.declinedPitches}</Text>
         </Box>
       </Flex>
-      <Flex height="40vh" mt={4} justify="space-around">
-        <Card w="45%">
+      <Flex height="40vh" mt={4} justify="space-around" >
+        <Card w="45%" display={"flex"} flexDirection={"row"} padding={2}>
+        <Text>Pitch Status Breakdown:</Text>
           <Doughnut data={doughnutChartData} />
         </Card>
-        <Card w="45%" h={'100%'}>
+        <Card w="45%" h={'100%'} padding={2}>
+          <Text>Users Information Breakdown:</Text>
           <Bar data={barChartData} options={{ maintainAspectRatio: false }} />
         </Card>
       </Flex>
