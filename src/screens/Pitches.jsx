@@ -12,26 +12,23 @@ import {
   Text,
   Flex,
   Button,
-  useDisclosure,
+  Spinner,
+  Center,
+  Select,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  Spinner,
-  Center,
-  Select,
 } from "@chakra-ui/react";
-import { AiOutlineUsergroupAdd } from "react-icons/ai";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { axi } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useAuth, axi } from "../context/AuthContext";
 
 const Pitches = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [pitches, setPitches] = useState([]);
   const [filteredPitches, setFilteredPitches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const { authState } = useAuth();
   const navigate = useNavigate();
 
@@ -42,7 +39,6 @@ const Pitches = () => {
         const response = await axi.get("/admin/get-Pitches", { headers });
         setPitches(response.data);
         setFilteredPitches(response.data);
-        console.log(response.data);
       } catch (error) {
         if (!error.response) {
           alert("Network error: Please check your internet connection.");
@@ -61,8 +57,8 @@ const Pitches = () => {
   }, [authState.token, navigate]);
 
   useEffect(() => {
-    applyFilter();
-  }, [filter, pitches]);
+    applyFilters();
+  }, [filter, statusFilter, pitches]);
 
   const changeStatus = async (status, id) => {
     try {
@@ -87,27 +83,35 @@ const Pitches = () => {
     }
   };
 
-  const applyFilter = () => {
+  const applyFilters = () => {
     const now = new Date();
     let filtered = pitches;
 
+    // Apply date filter
     if (filter === "last-week") {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(now.getDate() - 7);
-      filtered = pitches.filter(pitch =>
+      filtered = filtered.filter(pitch =>
         new Date(pitch.review.updated_at) >= oneWeekAgo
       );
     } else if (filter === "month") {
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(now.getMonth() - 1);
-      filtered = pitches.filter(pitch =>
+      filtered = filtered.filter(pitch =>
         new Date(pitch.review.updated_at) >= oneMonthAgo
       );
     } else if (filter === "year") {
       const oneYearAgo = new Date();
       oneYearAgo.setFullYear(now.getFullYear() - 1);
-      filtered = pitches.filter(pitch =>
+      filtered = filtered.filter(pitch =>
         new Date(pitch.review.updated_at) >= oneYearAgo
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(pitch =>
+        pitch.review.review_status.toLowerCase() === statusFilter
       );
     }
 
@@ -118,7 +122,11 @@ const Pitches = () => {
     setFilter(event.target.value);
   };
 
-  const viewPitch = (id, data) => {
+  const handleStatusFilterChange = (event) => {
+    setStatusFilter(event.target.value);
+  };
+
+  const viewPitch = (id) => {
     navigate(`/pitch/${id}`);
   };
 
@@ -141,12 +149,20 @@ const Pitches = () => {
           <Text color={"grey"} fontWeight={20}>
             {filteredPitches.length} Pitches
           </Text>
-          <Select value={filter} onChange={handleFilterChange} maxWidth="200px">
-            <option value="all">All</option>
-            <option value="last-week">Last Week</option>
-            <option value="month">Month</option>
-            <option value="year">Year</option>
-          </Select>
+          <Flex gap={4}>
+            <Select value={filter} onChange={handleFilterChange} maxWidth="200px">
+              <option value="all">All</option>
+              <option value="last-week">Last Week</option>
+              <option value="month">Month</option>
+              <option value="year">Year</option>
+            </Select>
+            <Select value={statusFilter} onChange={handleStatusFilterChange} maxWidth="200px">
+              <option value="all">All Status</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending</option>
+              <option value="declined">Declined</option>
+            </Select>
+          </Flex>
         </Flex>
       </Box>
 
@@ -174,25 +190,23 @@ const Pitches = () => {
             {filteredPitches.map((data, index) => (
               <Tr key={data.id}>
                 <Td>{index + 1}</Td>
-                <Td>{data.user.full_name}</Td>
-                <Td>{data.user.email}</Td>
+                <Td>{data.user?.full_name || "N/A"}</Td>
+                <Td>{data.user?.email || "N/A"}</Td>
                 <Td>
                   <Menu>
                     <MenuButton
-                      onClick={onOpen}
                       as={Button}
                       variant={"outline"}
                       size={"sm"}
                       colorScheme={
                         data.review.review_status.toLowerCase() === "approved"
                           ? "green"
-                          : data.review.review_status.toLowerCase() ===
-                            "pending"
+                          : data.review.review_status.toLowerCase() === "pending"
                           ? "orange"
                           : "red"
                       }
                     >
-                      {data.review.review_status}
+                      {data.review.review_status || "Unknown"}
                     </MenuButton>
                     <MenuList>
                       <MenuItem
@@ -210,10 +224,10 @@ const Pitches = () => {
                 </Td>
                 <Td>{data.review.reviewer_name || "Not yet reviewed"}</Td>
                 <Td>
-                  {new Date(data.review.updated_at).toLocaleDateString()}
+                  {new Date(data.review.updated_at).toLocaleDateString() || "N/A"}
                 </Td>
                 <Td>
-                  <Button onClick={() => viewPitch(data.id, data)}>
+                  <Button onClick={() => viewPitch(data.id)}>
                     View Pitch
                   </Button>
                 </Td>
