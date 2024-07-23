@@ -17,6 +17,8 @@ import Login from "./screens/Login"
 import { useAuth } from "./context/AuthContext";
 import Businesses from "./screens/Businesses";
 import Technical from "./screens/Technical"
+import ScheduledMeetings from "./screens/ScheduledMeetings";
+import Awards from "./screens/Awards"
 
 const isAuthenticated = () => {
   // Replace this with your actual authentication logic
@@ -50,6 +52,8 @@ const Screens = () => {
             <Route path="/pitch/competition/:id" element={<ProtectedRoute element={<Competition />} />} />
             <Route path="/pitch/technical/:id" element={<ProtectedRoute element={<Technical/>} />} />
             <Route path="/notifications" element={<ProtectedRoute element={<Notifications />} />} />
+            <Route path="/scheduledMeetings" element={<ProtectedRoute element={<ScheduledMeetings />} />} />
+            <Route path="/awards" element={<ProtectedRoute element={<Awards />} />} />
           </Routes>
         </Box>
       </Box>

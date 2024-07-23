@@ -11,7 +11,7 @@ import {
   Icon,
   Link,
 } from "@chakra-ui/react";
-import { FiHome, FiCalendar, FiSettings, FiArrowRight } from "react-icons/fi";
+import { FiHome, FiCalendar, FiSettings, FiArrowRight, FiAward } from "react-icons/fi";
 import { FaLightbulb, FaBuilding } from "react-icons/fa";
 import { useAuth, axi } from "../context/AuthContext";
 import { Link as RouterLink } from "react-router-dom";
@@ -39,6 +39,8 @@ const Sidebar = () => {
     { name: "Pitches", icon: FaLightbulb, to: "/pitches", key: "pitches" },
     { name: "Events", icon: FiCalendar, to: "/events", key: "events" },
     { name: "Businesses", icon: FaBuilding, to: "/businesses", key: "businesses" },
+    { name: "Scheduled Meetings", icon: FiCalendar, to: "/scheduledMeetings", key: "scheduledMeetings" },
+    { name: "Awards", icon: FiAward, to: "/awards", key: "awards" },
     { name: "Personnel", icon: FiSettings, to: "/personnel", key: "personnel" },
   ];
 
@@ -85,7 +87,7 @@ const Sidebar = () => {
             <Divider />
 
             <VStack spacing="3" align="start">
-              {links.slice(0, 4).map((link) => (
+              {links.slice(0, 6).map((link) => (
                 <Link
                   as={RouterLink}
                   to={link.to}
@@ -110,7 +112,7 @@ const Sidebar = () => {
           {user.role === "superadmin" && (
             <VStack spacing="3" align="start">
               <Divider />
-              {links.slice(4).map((link) => (
+              {links.slice(6).map((link) => (
                 <Link
                   as={RouterLink}
                   to={link.to}
