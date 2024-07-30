@@ -19,41 +19,58 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, axi } from "../context/AuthContext";
 
 const ScheduledMeetings = () => {
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [meetings, setMeetings] = useState([]);
   const [filteredMeetings, setFilteredMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const { authState } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const getMeetings = async () => {
-      try {
-        const headers = { Authorization: `Bearer ${authState.token}` };
-        const response = await axi.get("/admin/get-all-scheduled-meetings", { headers });
-        const meetingsData = response.data || []; // Ensure it's an array
-        setMeetings(meetingsData);
-        setFilteredMeetings(meetingsData);
-      } catch (error) {
-        if (!error.response) {
-          alert("Network error: Please check your internet connection.");
-        } else if (error.response.status === 401) {
-          alert("Unauthorized: Please log in again.");
-          navigate("/login");
-        } else {
-          alert("An error occurred: " + error.response.data.message);
-        }
-        console.error("Failed to fetch meetings:", error);
-      } finally {
-        setLoading(false);
+  const getMeetings = async () => {
+    try {
+      const headers = { Authorization: `Bearer ${authState.token}` };
+      const response = await axi.get("/admin/get-all-scheduled-meetings", {
+        headers,
+      });
+      const meetingsData = response.data.meetings || []; // Ensure it's an array
+      console.log(meetingsData);
+      setMeetings(meetingsData);
+      setFilteredMeetings(meetingsData);
+    } catch (error) {
+      if (!error.response) {
+        alert("Network error: Please check your internet connection.");
+      } else if (error.response.status === 401) {
+        alert("Unauthorized: Please log in again.");
+        navigate("/login");
+      } else {
+        alert("An error occurred: " + error.response.data.message);
       }
-    };
+      console.error("Failed to fetch meetings:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     getMeetings();
   }, [authState.token, navigate]);
 
@@ -66,11 +83,14 @@ const ScheduledMeetings = () => {
       const headers = { Authorization: `Bearer ${authState.token}` };
       await axi.patch(
         "/admin/review-meeting-schedule",
-        { meetingId: id, meetingLink: "", reviewStatus: status },
+        { meetingId: id, reviewStatus: status },
         { headers }
       );
-      const response = await axi.get("/admin/get-all-scheduled-meetings", { headers });
-      const meetingsData = response.data || [];
+      const response = await axi.get("/admin/get-all-scheduled-meetings", {
+        headers,
+      });
+      const meetingsData = response.data.meetings || [];
+      console.log(response.data);
       setMeetings(meetingsData);
     } catch (error) {
       if (!error.response) {
@@ -93,27 +113,27 @@ const ScheduledMeetings = () => {
     if (filter === "last-week") {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(now.getDate() - 7);
-      filtered = filtered.filter(meeting =>
-        new Date(meeting.review.updated_at) >= oneWeekAgo
+      filtered = filtered.filter(
+        (meeting) => new Date(meeting.review.updated_at) >= oneWeekAgo
       );
     } else if (filter === "month") {
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(now.getMonth() - 1);
-      filtered = filtered.filter(meeting =>
-        new Date(meeting.review.updated_at) >= oneMonthAgo
+      filtered = filtered.filter(
+        (meeting) => new Date(meeting.review.updated_at) >= oneMonthAgo
       );
     } else if (filter === "year") {
       const oneYearAgo = new Date();
       oneYearAgo.setFullYear(now.getFullYear() - 1);
-      filtered = filtered.filter(meeting =>
-        new Date(meeting.review.updated_at) >= oneYearAgo
+      filtered = filtered.filter(
+        (meeting) => new Date(meeting.review.updated_at) >= oneYearAgo
       );
     }
 
     // Apply status filter
     if (statusFilter !== "all") {
-      filtered = filtered.filter(meeting =>
-        meeting.review.review_status.toLowerCase() === statusFilter
+      filtered = filtered.filter(
+        (meeting) => meeting.review.review_status.toLowerCase() === statusFilter
       );
     }
 
@@ -152,13 +172,21 @@ const ScheduledMeetings = () => {
             {filteredMeetings.length} Meetings
           </Text>
           <Flex gap={4}>
-            <Select value={filter} onChange={handleFilterChange} maxWidth="200px">
+            <Select
+              value={filter}
+              onChange={handleFilterChange}
+              maxWidth="200px"
+            >
               <option value="all">All</option>
               <option value="last-week">Last Week</option>
               <option value="month">Month</option>
               <option value="year">Year</option>
             </Select>
-            <Select value={statusFilter} onChange={handleStatusFilterChange} maxWidth="200px">
+            <Select
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+              maxWidth="200px"
+            >
               <option value="all">All Status</option>
               <option value="approved">Approved</option>
               <option value="pending">Pending</option>
@@ -180,64 +208,84 @@ const ScheduledMeetings = () => {
           >
             <Tr className="bg-[#F6F7FB] border border-[#EAECF0]">
               <Th>S/N</Th>
-              <Th>Name</Th>
-              <Th>Email</Th>
+              <Th>Proposer Name</Th>
+              <Th>Proposer Email</Th>
+              <Th>Business Name</Th>
               <Th>Status</Th>
-              <Th>Reviewer</Th>
-              <Th>Date Scheduled</Th>
+              <Th>Date Reviewed</Th>
               <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
-            {Array.isArray(filteredMeetings) && filteredMeetings.map((data, index) => (
-              <Tr key={data.id}>
-                <Td>{index + 1}</Td>
-                <Td>{data.user?.full_name || "N/A"}</Td>
-                <Td>{data.user?.email || "N/A"}</Td>
-                <Td>
-                  <Menu>
-                    <MenuButton
-                      as={Button}
-                      variant={"outline"}
-                      size={"sm"}
-                      colorScheme={
-                        data.review.review_status.toLowerCase() === "approved"
-                          ? "green"
-                          : data.review.review_status.toLowerCase() === "pending"
-                          ? "orange"
-                          : "red"
-                      }
-                    >
-                      {data.review.review_status || "Unknown"}
-                    </MenuButton>
-                    <MenuList>
-                      <MenuItem
-                        onClick={() => changeStatus("approved", data.id)}
+            {Array.isArray(filteredMeetings) &&
+              filteredMeetings.map((data, index) => (
+                <Tr key={data.id}>
+                  <Td>{index + 1}</Td>
+                  <Td>{data.proposer?.full_name || "N/A"}</Td>
+                  <Td>{data.proposer?.email || "N/A"}</Td>
+                  <Td>{data.recipient?.business_name || "N/A"}</Td>
+                  <Td>
+                    <Menu>
+                      <MenuButton
+                        as={Button}
+                        variant={"outline"}
+                        size={"sm"}
+                        colorScheme={
+                          data.review.review_status.toLowerCase() === "approved"
+                            ? "green"
+                            : data.review.review_status.toLowerCase() ===
+                              "pending"
+                            ? "orange"
+                            : "red"
+                        }
+                        
                       >
-                        Approve
-                      </MenuItem>
-                      <MenuItem
-                        onClick={() => changeStatus("declined", data.id)}
-                      >
-                        Decline
-                      </MenuItem>
-                    </MenuList>
-                  </Menu>
-                </Td>
-                <Td>{data.review.reviewer_name || "Not yet reviewed"}</Td>
-                <Td>
-                  {new Date(data.review.updated_at).toLocaleDateString() || "N/A"}
-                </Td>
-                <Td>
-                  <Button onClick={() => viewMeeting(data.id)}>
-                    View Meeting
-                  </Button>
-                </Td>
-              </Tr>
-            ))}
+                        {data.review.review_status || "Unknown"}
+                      </MenuButton>
+                      <MenuList>
+                        <MenuItem
+                          onClick={() => changeStatus("approved", data.id)}
+                        >
+                          Approve
+                        </MenuItem>
+                        <MenuItem
+                          onClick={() => changeStatus("declined", data.id)}
+                        >
+                          Decline
+                        </MenuItem>
+                      </MenuList>
+                    </Menu>
+                  </Td>
+                  <Td>
+                    {new Date(data.review.updated_at).toLocaleDateString() ||
+                      "N/A"}
+                  </Td>
+                  <Td>
+                    <Button onClick={()=> (setName(data.proposer?.full_name), setDescription(data.recipient?.business_name ), onOpen() )}>
+                      View Proposal
+                    </Button>
+                  </Td>
+                </Tr>
+              ))}
           </Tbody>
         </Table>
       </Box>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>{name} Meeting Proposal</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {description}
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose}>
+              Close
+            </Button>
+            {/* <Button colorScheme="green" onClick={handleSubmit}>Submit</Button> */}
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };

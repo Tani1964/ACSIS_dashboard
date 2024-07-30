@@ -7,7 +7,7 @@ const USER_KEY = "user";
 export const AuthContext = createContext();
 
 export const axi = axios.create({
-  baseURL: "https://pitci-server.onrender.com/api/v1", // Replace with your actual base URL
+  baseURL: "http://ec2-16-170-223-254.eu-north-1.compute.amazonaws.com/api/v1", // Replace with your actual base URL
 });
 
 // Custom hook to use Auth context
