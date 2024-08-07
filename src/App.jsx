@@ -19,6 +19,7 @@ import Businesses from "./screens/Businesses";
 import Technical from "./screens/Technical"
 import ScheduledMeetings from "./screens/ScheduledMeetings";
 import Awards from "./screens/Awards"
+import Nominees from "./screens/Nominees";
 
 const isAuthenticated = () => {
   // Replace this with your actual authentication logic
@@ -54,6 +55,7 @@ const Screens = () => {
             <Route path="/notifications" element={<ProtectedRoute element={<Notifications />} />} />
             <Route path="/scheduledMeetings" element={<ProtectedRoute element={<ScheduledMeetings />} />} />
             <Route path="/awards" element={<ProtectedRoute element={<Awards />} />} />
+            <Route path="/awards/nominees/:id" element={<ProtectedRoute element={<Nominees />} />} />
           </Routes>
         </Box>
       </Box>

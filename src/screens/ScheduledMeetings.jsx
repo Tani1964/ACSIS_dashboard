@@ -261,7 +261,7 @@ const ScheduledMeetings = () => {
                       "N/A"}
                   </Td>
                   <Td>
-                    <Button onClick={()=> (setName(data.proposer?.full_name), setDescription(data.recipient?.business_name ), onOpen() )}>
+                    <Button onClick={()=> (setName(data.proposer?.full_name), setDescription(data.description ), onOpen() )}>
                       View Proposal
                     </Button>
                   </Td>

@@ -45,14 +45,22 @@ const Events = () => {
     description: "",
     location: "",
     date: "",
+    day: "",
     time: "",
     durationHours: 0,
     dateTime: "",
     registrationLink: "",
+    image: null,
+    sponsorImages: [],
     sponsors: [],
     otherLinks: [],
   });
-  const [newSponsor, setNewSponsor] = useState({ name: "", description: "" });
+  const [newSponsor, setNewSponsor] = useState({
+    name: "",
+    description: "",
+    website: "",
+    image: null,
+  });
   const [newLink, setNewLink] = useState({ title: "", url: "" });
 
   useEffect(() => {
@@ -61,7 +69,7 @@ const Events = () => {
         const headers = { Authorization: `Bearer ${authState.token}` };
         const response = await axi.get("/event/get-all-events", { headers });
         setEvents(response.data);
-        console.log(response.data);
+        // console.log(response.data);
       } catch (error) {
         console.error("Failed to fetch events:", error);
       } finally {
@@ -76,9 +84,19 @@ const Events = () => {
     setNewEvent({ ...newEvent, [name]: value });
   };
 
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    setNewEvent({ ...newEvent, [name]: files[0] });
+  };
+
+  const handleSponsorLogoChange = (e) => {
+    const { files } = e.target;
+    setNewEvent({ ...newEvent, sponsorImages: Array.from(files) });
+  };
+
   const handleDateChange = (date) => {
     if (date) {
-      const dateString = date.format('YYYY-MM-DD'); // Ensure date format is correct
+      const dateString = date.format("YYYY-MM-DD"); // Ensure date format is correct
       setNewEvent({ ...newEvent, date: dateString });
     }
   };
@@ -88,11 +106,12 @@ const Events = () => {
   };
 
   const handleAddSponsor = () => {
+    const newSponsorWithImage = { ...newSponsor, image: null }; // Handle image upload separately
     setNewEvent({
       ...newEvent,
-      sponsors: [...newEvent.sponsors, newSponsor],
+      sponsors: [...newEvent.sponsors, newSponsorWithImage],
     });
-    setNewSponsor({ name: "", description: "" });
+    setNewSponsor({ name: "", description: "", website: "", image: null });
   };
 
   const handleDeleteSponsor = (index) => {
@@ -115,31 +134,49 @@ const Events = () => {
 
   const handleAddEvent = async () => {
     try {
-      const headers = { Authorization: `Bearer ${authState.token}` };
+      const headers = { Authorization: `Bearer ${authState.token}`, "Content-Type": "multipart/form-data" };
       const combinedDateTime = new Date(`${newEvent.date}T${newEvent.time}`).toISOString();
-      
-      // Create event form data with combinedDateTime
-      const formData = {
-        ...newEvent,
-        durationHours: parseInt(newEvent.durationHours),
-        dateTime: combinedDateTime,
-      };
   
-      console.log(formData);
+      const formData = new FormData();
+      formData.append("title", newEvent.title);
+      formData.append("description", newEvent.description);
+      formData.append("location", newEvent.location);
+      formData.append("dateTime", combinedDateTime);
+      formData.append("day", newEvent.day);
+      formData.append("durationHours", newEvent.durationHours);
+      formData.append("registrationLink", newEvent.registrationLink);
+  
+      if (newEvent.image) {
+        formData.append("image", newEvent.image);
+      }
+  
+      newEvent.sponsorImages.forEach((image, index) => {
+        formData.append(`sponsorImages`, image);  // Ensure the backend expects "sponsorImages"
+      });
+  
+      formData.append("sponsors", JSON.stringify(newEvent.sponsors));
+      formData.append("otherLinks", JSON.stringify(newEvent.otherLinks));
+  
+      console.log([...formData.entries()]);  // Check the form data being sent
+  
       await axi.post("/event/create-event", formData, { headers });
-      
+  
       setEvents([...events, { ...newEvent, id: events.length + 1 }]);
       setNewEvent({
         title: "",
         description: "",
         location: "",
         date: "",
+        day: "",
         time: "",
         durationHours: 0,
         registrationLink: "",
+        image: null,
+        sponsorImages: [],
         sponsors: [],
         otherLinks: [],
       });
+  
       const response = await axi.get("/event/get-all-events", { headers });
       setEvents(response.data);
       onClose();
@@ -194,6 +231,7 @@ const Events = () => {
               <Th>Date</Th>
               <Th>Time</Th>
               <Th>Description</Th>
+              <Th>Day</Th>
               <Th>Predicted Duration</Th>
               <Th>Actions</Th>
             </Tr>
@@ -212,6 +250,7 @@ const Events = () => {
                   })}
                 </Td>
                 <Td>{event.description}</Td>
+                <Td>{event.day}</Td>
                 <Td>{event.duration_hours} hours</Td>
                 <Td>
                   <DeleteIcon
@@ -275,6 +314,15 @@ const Events = () => {
               />
             </FormControl>
             <FormControl mt={4}>
+              <FormLabel>Day</FormLabel>
+              <Input
+                name="day"
+                type="text"
+                value={newEvent.day}
+                onChange={handleChange}
+              />
+            </FormControl>
+            <FormControl mt={4}>
               <FormLabel>Predicted Duration (hours)</FormLabel>
               <Input
                 name="durationHours"
@@ -292,9 +340,32 @@ const Events = () => {
               />
             </FormControl>
             <FormControl mt={4}>
+              <FormLabel>Event Image</FormLabel>
+              <Input
+                name="image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Sponsor Logo Images</FormLabel>
+              <Input
+                name="sponsorImages"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleSponsorLogoChange}
+              />
+            </FormControl>
+            <FormControl mt={4}>
               <FormLabel>Sponsors</FormLabel>
               {newEvent.sponsors.map((sponsor, index) => (
-                <Flex key={index} alignItems="center" justifyContent="space-between">
+                <Flex
+                  key={index}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
                     <Text fontWeight="bold">{sponsor.name}</Text>
                     <Text>{sponsor.description}</Text>
@@ -320,7 +391,10 @@ const Events = () => {
                   placeholder="Sponsor Description"
                   value={newSponsor.description}
                   onChange={(e) =>
-                    setNewSponsor({ ...newSponsor, description: e.target.value })
+                    setNewSponsor({
+                      ...newSponsor,
+                      description: e.target.value,
+                    })
                   }
                 />
                 <Button mt={2} onClick={handleAddSponsor}>
@@ -331,7 +405,11 @@ const Events = () => {
             <FormControl mt={4}>
               <FormLabel>Other Links</FormLabel>
               {newEvent.otherLinks.map((link, index) => (
-                <Flex key={index} alignItems="center" justifyContent="space-between">
+                <Flex
+                  key={index}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <Box>
                     <Text fontWeight="bold">{link.title}</Text>
                     <Text>{link.url}</Text>
