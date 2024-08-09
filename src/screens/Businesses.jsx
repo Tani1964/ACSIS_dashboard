@@ -37,6 +37,7 @@ import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { axi } from "../context/AuthContext";
+import { DeleteIcon } from "@chakra-ui/icons";
 
 const Businesses = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -126,6 +127,30 @@ const Businesses = () => {
     }
   };
 
+  const deleteBusiness = async (id) => {
+    try {
+      const headers = { Authorization: `Bearer ${authState.token}` };
+      await axi.delete(`/admin/delete-business/${id}`, { headers });
+      getData(); // Refresh data after deletion
+      toast({
+        title: "Success",
+        description: "Business deleted successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Failed to delete business:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete business.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Center height="100vh">
@@ -167,7 +192,7 @@ const Businesses = () => {
               <Th>Owner</Th>
               <Th>Owner Email</Th>
               <Th>Date Created</Th>
-              <Th></Th>
+              <Th>Actions</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -179,6 +204,11 @@ const Businesses = () => {
                 <Td>{data.business_owner_name}</Td>
                 <Td>{data.business_owner_email}</Td>
                 <Td>{new Date(data.created_at).toLocaleDateString()}</Td>
+                <Td>
+                <DeleteIcon
+                    cursor="pointer"
+                    onClick={() => deleteBusiness(data.id)}/>
+                </Td>
               </Tr>
             ))}
           </Tbody>

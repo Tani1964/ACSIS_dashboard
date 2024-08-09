@@ -11,7 +11,7 @@ const Nominees = () => {
     try {
       const response = await axi.get(`/award/get-award-nominees/${id}`);
       setData(response.data.nominees); // Assuming the response contains nominees in this structure
-      console.log(response.data);
+      console.log(response.data.nominees.business_nominee);
     } catch (error) {
       console.error("Failed to fetch nominees:", error);
     }
@@ -27,9 +27,16 @@ const Nominees = () => {
       <List spacing={3}>
         {data.map((nominee) => (
           <Box key={nominee.id} p={4} borderWidth={1} borderRadius="md" shadow="sm">
-            <Text fontWeight="bold">{nominee.name}</Text>
-            <Text>Award: {nominee.award.title}</Text> {/* Adjust this according to the structure of the award object */}
+            <Text fontWeight="bold">{nominee.business_nominee.business_name}</Text>
+            <Text fontWeight="light">Category: {nominee.nominee_type}</Text> 
             <Divider mt={2} />
+            <Text>Description: {nominee.business_nominee.business_description}</Text> 
+            <Text>Contact: {nominee.business_nominee.business_owner_email}</Text> 
+            <Text>Website: {nominee.business_nominee.website}</Text> 
+            <Divider mt={2} />
+            <Text>Votes: {(nominee.votes).length}</Text> 
+            
+
           </Box>
         ))}
       </List>

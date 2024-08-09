@@ -27,8 +27,6 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  FormControl,
-  FormLabel,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, axi } from "../context/AuthContext";
@@ -51,7 +49,7 @@ const ScheduledMeetings = () => {
       const response = await axi.get("/admin/get-all-scheduled-meetings", {
         headers,
       });
-      const meetingsData = response.data.meetings || []; // Ensure it's an array
+      const meetingsData = response.data.meetings || [];
       console.log(meetingsData);
       setMeetings(meetingsData);
       setFilteredMeetings(meetingsData);
@@ -86,12 +84,8 @@ const ScheduledMeetings = () => {
         { meetingId: id, reviewStatus: status },
         { headers }
       );
-      const response = await axi.get("/admin/get-all-scheduled-meetings", {
-        headers,
-      });
-      const meetingsData = response.data.meetings || [];
-      console.log(response.data);
-      setMeetings(meetingsData);
+      // Re-fetch meetings after status change
+      getMeetings();
     } catch (error) {
       if (!error.response) {
         alert("Network error: Please check your internet connection.");
@@ -114,26 +108,26 @@ const ScheduledMeetings = () => {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(now.getDate() - 7);
       filtered = filtered.filter(
-        (meeting) => new Date(meeting.review.updated_at) >= oneWeekAgo
+        (meeting) => new Date(meeting.review?.updated_at) >= oneWeekAgo
       );
     } else if (filter === "month") {
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(now.getMonth() - 1);
       filtered = filtered.filter(
-        (meeting) => new Date(meeting.review.updated_at) >= oneMonthAgo
+        (meeting) => new Date(meeting.review?.updated_at) >= oneMonthAgo
       );
     } else if (filter === "year") {
       const oneYearAgo = new Date();
       oneYearAgo.setFullYear(now.getFullYear() - 1);
       filtered = filtered.filter(
-        (meeting) => new Date(meeting.review.updated_at) >= oneYearAgo
+        (meeting) => new Date(meeting.review?.updated_at) >= oneYearAgo
       );
     }
 
     // Apply status filter
     if (statusFilter !== "all") {
       filtered = filtered.filter(
-        (meeting) => meeting.review.review_status.toLowerCase() === statusFilter
+        (meeting) => meeting.review?.review_status.toLowerCase() === statusFilter
       );
     }
 
@@ -231,16 +225,15 @@ const ScheduledMeetings = () => {
                         variant={"outline"}
                         size={"sm"}
                         colorScheme={
-                          data.review.review_status.toLowerCase() === "approved"
+                          data.review?.review_status.toLowerCase() === "approved"
                             ? "green"
-                            : data.review.review_status.toLowerCase() ===
+                            : data.review?.review_status.toLowerCase() ===
                               "pending"
                             ? "orange"
                             : "red"
                         }
-                        
                       >
-                        {data.review.review_status || "Unknown"}
+                        {data.review?.review_status || "Unknown"}
                       </MenuButton>
                       <MenuList>
                         <MenuItem
@@ -257,11 +250,18 @@ const ScheduledMeetings = () => {
                     </Menu>
                   </Td>
                   <Td>
-                    {new Date(data.review.updated_at).toLocaleDateString() ||
-                      "N/A"}
+                    {data.review?.updated_at
+                      ? new Date(data.review.updated_at).toLocaleDateString()
+                      : "N/A"}
                   </Td>
                   <Td>
-                    <Button onClick={()=> (setName(data.proposer?.full_name), setDescription(data.description ), onOpen() )}>
+                    <Button
+                      onClick={() => {
+                        setName(data.proposer?.full_name || "N/A");
+                        setDescription(data.description || "No description available");
+                        onOpen();
+                      }}
+                    >
                       View Proposal
                     </Button>
                   </Td>
@@ -282,7 +282,6 @@ const ScheduledMeetings = () => {
             <Button variant="ghost" mr={3} onClick={onClose}>
               Close
             </Button>
-            {/* <Button colorScheme="green" onClick={handleSubmit}>Submit</Button> */}
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -32,6 +32,7 @@ import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import { useAuth } from "../context/AuthContext";
 import { axi } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { DeleteIcon } from "@chakra-ui/icons";
 
 const Awards = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -232,18 +233,12 @@ const Awards = () => {
                       <option value="voting-open">Voting Open</option>
                       <option value="closed">Closed</option>
                     </Select>
-                    <Button
-                      colorScheme="red"
-                      size="sm"
-                      ml={2}
-                      onClick={() => deleteAward(award.id)}
-                    >
-                      Delete
-                    </Button>
+                  
+                
                   </Td>
-                  <Td>
+                  <Td >
+                    <Box display={"flex"} alignItems={"center"} gap={4}>
                     <Button
-                      colorScheme="blue"
                       size="sm"
                       onClick={() => {
                         // Navigate to nominees page
@@ -254,6 +249,10 @@ const Awards = () => {
                     >
                       View Nominees
                     </Button>
+                    <DeleteIcon
+                    cursor="pointer"
+                    onClick={() => deleteAward(award.id)}
+                  /></Box>
                   </Td>
                 </Tr>
               ))}
