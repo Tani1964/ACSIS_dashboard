@@ -71,13 +71,13 @@ const Header = () => {
               <Kbd className="bg-white h-fit">F</Kbd>
             </span>
           </Flex>
-          {console.log(user.full_name)}
+          {console.log(user?.full_name)}
           <Box p={4}>
               <Menu>
                 <MenuButton>
                   <Avatar
                     size="sm"
-                    name={user.full_name}
+                    name={user?.full_name}
                     
                     bg={"white"}
                     color={"green"}
