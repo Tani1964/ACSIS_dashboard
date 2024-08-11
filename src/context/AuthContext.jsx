@@ -7,7 +7,7 @@ const USER_KEY = "user";
 export const AuthContext = createContext();
 
 export const axi = axios.create({
-  baseURL:  import.meta.env.VITE_BASE_URL
+  baseURL:  "https://africancaribbeansummit.xyz/api/v1/"
 });
 
 // Custom hook to use Auth context
