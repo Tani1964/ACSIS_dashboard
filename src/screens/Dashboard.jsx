@@ -13,7 +13,7 @@ import {
   BarElement,
   BarController,
 } from 'chart.js';
-import { Navigate, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, BarController);
 

@@ -1,16 +1,17 @@
-import { Box, Flex, Image, Input, Button, Heading, FormControl, FormLabel, FormErrorMessage, Text, Checkbox, Spinner } from "@chakra-ui/react";
+import { Box, Flex, Image, Input, Button, Heading, FormControl, FormLabel, FormErrorMessage, Text, Checkbox, InputGroup, InputRightElement, IconButton } from "@chakra-ui/react";
 import { useState } from "react";
-import LeftImg from "../assets/images/Frame 3.svg"; // replace with the appropriate image path
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import LeftImg from "../assets/images/Frame 3.svg";
 import { axi } from "../context/AuthContext";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import Logo from "../assets/images/logo.png";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false); // Add loading state
+  const [loading, setLoading] = useState(false); 
   const { setAuthInfo, setUserInfo } = useAuth();
   const navigate = useNavigate();
 
@@ -22,13 +23,13 @@ const Login = () => {
 
     if (Object.keys(newErrors).length > 0) return;
 
-    setLoading(true); // Show loader
+    setLoading(true); 
 
     try {
       const formData = { email, password };
       const response = await axi.post("/auth/login", formData);
       setAuthInfo(response.data.token);
-      setUserInfo(response.data.user); // Assuming the user info is part of the response
+      setUserInfo(response.data.user);
       if (response.data.isAdmin) {
         navigate("/");
       } else {
@@ -36,21 +37,17 @@ const Login = () => {
       }
     } catch (error) {
       if (!error.response) {
-        // Network error
         alert("Network error: Please check your internet connection.");
       } else if (error.response.status === 401) {
-        // Reauthorization error
         alert("Unauthorized: Invalid email or password.");
-      }else if (error.response.status === 422) {
-        // Reauthorization error
+      } else if (error.response.status === 422) {
         alert("Unauthorized: Invalid email or password.");
       } else {
-        // Other errors
         alert("An error occurred: " + error.response.data.message);
       }
       console.error("Failed to login:", error);
     } finally {
-      setLoading(false); // Hide loader
+      setLoading(false); 
     }
   };
 
@@ -81,13 +78,23 @@ const Login = () => {
         </FormControl>
         <FormControl id="password" isInvalid={errors.password} mb={3}>
           <FormLabel>Password</FormLabel>
-          <Input 
-            placeholder="Password" 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            aria-label="Password" 
-          />
+          <InputGroup>
+            <Input 
+              placeholder="Password" 
+              type={showPassword ? "text" : "password"} 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              aria-label="Password" 
+            />
+            <InputRightElement>
+              <IconButton
+                icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+                onClick={() => setShowPassword(!showPassword)}
+                variant="ghost"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              />
+            </InputRightElement>
+          </InputGroup>
           {errors.password && <FormErrorMessage>{errors.password}</FormErrorMessage>}
         </FormControl>
         <Flex justify="space-between" mb={6} width="100%">

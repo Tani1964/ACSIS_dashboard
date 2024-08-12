@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import {
   Box,
   Table,
@@ -29,7 +29,6 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
-import { useAuth } from "../context/AuthContext";
 import { axi } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { DeleteIcon } from "@chakra-ui/icons";
@@ -37,7 +36,6 @@ import { DeleteIcon } from "@chakra-ui/icons";
 const Awards = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [data, setData] = useState([]);
-  const { authState } = useAuth(); // Assuming authState is still needed for other purposes
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
@@ -241,10 +239,7 @@ const Awards = () => {
                     <Button
                       size="sm"
                       onClick={() => {
-                        // Navigate to nominees page
                         navigate(`/awards/nominees/${award.id}`);
-                        // You can use the `useNavigate` hook from `react-router-dom` to navigate
-                        // to the nominees page
                       }}
                     >
                       View Nominees

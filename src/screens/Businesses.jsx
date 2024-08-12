@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Table,
@@ -13,10 +13,6 @@ import {
   Flex,
   Button,
   useDisclosure,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -27,17 +23,14 @@ import {
   Input,
   FormControl,
   FormLabel,
-  Textarea,
-  IconButton,
   Spinner,
   Center,
   useToast,
 } from "@chakra-ui/react";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
-import { Link } from "react-router-dom";
+import { DeleteIcon } from "@chakra-ui/icons";
 import { useAuth } from "../context/AuthContext";
 import { axi } from "../context/AuthContext";
-import { DeleteIcon } from "@chakra-ui/icons";
 
 const Businesses = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -61,9 +54,7 @@ const Businesses = () => {
       const headers = { Authorization: `Bearer ${authState.token}` };
       const response = await axi.get("/admin/get-businesses", { headers });
       setData(response.data);
-      console.log(response.data);
     } catch (error) {
-      console.error("Failed to fetch metrics:", error);
       toast({
         title: "Error",
         description: "Failed to fetch businesses.",
@@ -89,11 +80,7 @@ const Businesses = () => {
     setSubmitting(true);
     try {
       const headers = { Authorization: `Bearer ${authState.token}` };
-      console.log(business);
-      const response = await axi.post("/admin/create-business", business, {
-        headers,
-      });
-      console.log(response.data);
+      await axi.post("/admin/create-business", business, { headers });
       getData();
       toast({
         title: "Success",
@@ -102,7 +89,6 @@ const Businesses = () => {
         duration: 5000,
         isClosable: true,
       });
-      // Reset form fields
       setBusiness({
         businessName: "",
         businessDescription: "",
@@ -112,9 +98,8 @@ const Businesses = () => {
         website: "",
         logo: "",
       });
-      onClose(); // Close the modal
+      onClose();
     } catch (error) {
-      console.error("Failed to add business:", error);
       toast({
         title: "Error",
         description: "Failed to add business.",
@@ -131,7 +116,7 @@ const Businesses = () => {
     try {
       const headers = { Authorization: `Bearer ${authState.token}` };
       await axi.delete(`/admin/delete-business/${id}`, { headers });
-      getData(); // Refresh data after deletion
+      getData();
       toast({
         title: "Success",
         description: "Business deleted successfully.",
@@ -140,7 +125,6 @@ const Businesses = () => {
         isClosable: true,
       });
     } catch (error) {
-      console.error("Failed to delete business:", error);
       toast({
         title: "Error",
         description: "Failed to delete business.",
@@ -160,32 +144,23 @@ const Businesses = () => {
   }
 
   return (
-    <Box className="px-6 py-4">
-      <Box>
-        <Heading>Businesses</Heading>
-        <Text color={"grey"}>An overview of all businesses</Text>
-        <Flex className="flex flex-row justify-between mt-5 py-4">
-          <Text color={"grey"} fontWeight={20}>
-            {data.length} Businesses
-          </Text>
-          <Button colorScheme="green" size="md" gap={2} onClick={onOpen}>
-            <AiOutlineUsergroupAdd />
-            Add New Business
-          </Button>
-        </Flex>
-      </Box>
+    <Box p={6}>
+      <Heading>Businesses</Heading>
+      <Text color="gray.500">An overview of all businesses</Text>
+      <Flex justify="space-between" align="center" my={5}>
+        <Text color="gray.500" fontWeight="bold">
+          {data.length} Businesses
+        </Text>
+        <Button colorScheme="green" onClick={onOpen} leftIcon={<AiOutlineUsergroupAdd />}>
+          Add New Business
+        </Button>
+      </Flex>
 
       <Box overflowY="auto" maxHeight="55vh">
         <Table>
           <TableCaption>Businesses</TableCaption>
-          <Thead
-            position="sticky"
-            top="0"
-            bg="white"
-            zIndex="1"
-            roundedTop={10}
-          >
-            <Tr className="bg-[#F6F7FB] border border-[#EAECF0]">
+          <Thead position="sticky" top={0} bg="white" zIndex={1}>
+            <Tr bg="#F6F7FB">
               <Th>S/N</Th>
               <Th>Name</Th>
               <Th>Description</Th>
@@ -196,24 +171,23 @@ const Businesses = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {data.map((data, index) => (
-              <Tr key={data.id}>
+            {data.map((business, index) => (
+              <Tr key={business.id}>
                 <Td>{index + 1}</Td>
-                <Td>{data.business_name}</Td>
-                <Td>{data.business_description}</Td>
-                <Td>{data.business_owner_name}</Td>
-                <Td>{data.business_owner_email}</Td>
-                <Td>{new Date(data.created_at).toLocaleDateString()}</Td>
+                <Td>{business.business_name}</Td>
+                <Td>{business.business_description}</Td>
+                <Td>{business.business_owner_name}</Td>
+                <Td>{business.business_owner_email}</Td>
+                <Td>{new Date(business.created_at).toLocaleDateString()}</Td>
                 <Td>
-                <DeleteIcon
-                    cursor="pointer"
-                    onClick={() => deleteBusiness(data.id)}/>
+                  <DeleteIcon cursor="pointer" onClick={() => deleteBusiness(business.id)} />
                 </Td>
               </Tr>
             ))}
           </Tbody>
         </Table>
       </Box>
+
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -221,7 +195,7 @@ const Businesses = () => {
           <ModalCloseButton />
           <ModalBody>
             <FormControl>
-              <FormLabel>Business Name:</FormLabel>
+              <FormLabel>Business Name</FormLabel>
               <Input
                 name="businessName"
                 value={business.businessName}
@@ -229,7 +203,7 @@ const Businesses = () => {
               />
             </FormControl>
             <FormControl mt={4}>
-              <FormLabel>Business Description:</FormLabel>
+              <FormLabel>Business Description</FormLabel>
               <Input
                 name="businessDescription"
                 value={business.businessDescription}
@@ -237,7 +211,7 @@ const Businesses = () => {
               />
             </FormControl>
             <FormControl mt={4}>
-              <FormLabel>Business Owner Name:</FormLabel>
+              <FormLabel>Business Owner Name</FormLabel>
               <Input
                 name="businessOwnerName"
                 value={business.businessOwnerName}
@@ -245,7 +219,7 @@ const Businesses = () => {
               />
             </FormControl>
             <FormControl mt={4}>
-              <FormLabel>Business Owner Email:</FormLabel>
+              <FormLabel>Business Owner Email</FormLabel>
               <Input
                 name="businessOwnerEmail"
                 value={business.businessOwnerEmail}
@@ -270,17 +244,9 @@ const Businesses = () => {
                 onChange={handleChange}
               />
             </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>Logo</FormLabel>
-              <Input
-                name="logo"
-                value={business.logo}
-                onChange={handleChange}
-              />
-            </FormControl>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onClose}>
+            <Button variant="ghost" onClick={onClose}>
               Close
             </Button>
             <Button

@@ -24,6 +24,7 @@ import {
   FormLabel,
   Spinner,
   Center,
+  useToast,
 } from "@chakra-ui/react";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { AiOutlineUsergroupAdd } from "react-icons/ai";
@@ -31,12 +32,22 @@ import { useEffect, useState } from "react";
 import { axi } from "../context/AuthContext";
 import { useAuth } from "../context/AuthContext";
 
+
+/**
+ * @typedef {Object} PersonnelData
+ * @property {string} id
+ * @property {string} full_name
+ * @property {string} email
+ * @property {string} role
+ */
+
 const Personnel = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { authState } = useAuth();
   const [personnel, setPersonnel] = useState([]);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
+  const toast = useToast()
 
   const getPersonnel = async () => {
     try {
@@ -62,6 +73,41 @@ const Personnel = () => {
       setPersonnel(response.data.filter((data) => data.role === "admin"));
     } catch (error) {
       console.error("Failed to add personnel:", error);
+      if (error.response) {
+        if (error.response.status === 422) {
+          toast({
+            title: "Validation Error",
+            description: "Invalid data provided.",
+            status: "warning",
+            duration: 5000,
+            isClosable: true,
+          });
+        }else if(error.response.status === 400) {
+          toast({
+            title: "Validation Error",
+            description: "User doesn't exist or already an admin.",
+            status: "warning",
+            duration: 5000,
+            isClosable: true,
+          });
+        } else {
+          toast({
+            title: `Error ${error.response.status}`,
+            description: error.response.data.message || "An error occurred.",
+            status: "error",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add personnel. Please try again.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
     }
   };
 

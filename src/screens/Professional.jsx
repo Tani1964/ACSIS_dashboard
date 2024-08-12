@@ -1,5 +1,5 @@
 import { Box, Button, Text, Heading, Spinner, Center, Alert, AlertIcon } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import PitchOptions from "../components/PitchOptions";
 import { useAuth, axi } from "../context/AuthContext";

@@ -134,7 +134,7 @@ const Sidebar = () => {
                   to={link.to}
                   key={link.key}
                   {...linkStyle}
-                  // onClick={() => setNav(link.key)}
+                  onClick={() => setNav(link.key)}
                   color={nav === link.key ? "#25B161" : "gray"}
                   backgroundColor={nav === link.key ? "#E0FFED" : null}
                   border={nav === link.key ? "1px solid #25B161" : null}

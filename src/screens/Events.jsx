@@ -62,6 +62,9 @@ const Events = () => {
     image: null,
   });
   const [newLink, setNewLink] = useState({ title: "", url: "" });
+  const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [isAddingSponsor, setIsAddingSponsor] = useState(false);
+  const [isAddingLink, setIsAddingLink] = useState(false);
 
   useEffect(() => {
     const getEvents = async () => {
@@ -84,14 +87,33 @@ const Events = () => {
     setNewEvent({ ...newEvent, [name]: value });
   };
 
+  const MAX_FILE_SIZE_MB = 90;
+
   const handleFileChange = (e) => {
     const { name, files } = e.target;
-    setNewEvent({ ...newEvent, [name]: files[0] });
+    const file = files[0];
+
+    if (file && file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      alert(`File size exceeds ${MAX_FILE_SIZE_MB}MB`);
+      return;
+    }
+
+    setNewEvent({ ...newEvent, [name]: file });
   };
 
   const handleSponsorLogoChange = (e) => {
     const { files } = e.target;
-    setNewEvent({ ...newEvent, sponsorImages: Array.from(files) });
+    const validFiles = Array.from(files).filter(
+      (file) => file.size <= MAX_FILE_SIZE_MB * 1024 * 1024
+    );
+
+    if (validFiles.length < files.length) {
+      alert(
+        `Some files were not uploaded because they exceed ${MAX_FILE_SIZE_MB}MB`
+      );
+    }
+
+    setNewEvent({ ...newEvent, sponsorImages: validFiles });
   };
 
   const handleDateChange = (date) => {
@@ -106,12 +128,19 @@ const Events = () => {
   };
 
   const handleAddSponsor = () => {
-    const newSponsorWithImage = { ...newSponsor, image: null }; // Handle image upload separately
-    setNewEvent({
-      ...newEvent,
-      sponsors: [...newEvent.sponsors, newSponsorWithImage],
-    });
-    setNewSponsor({ name: "", description: "", website: "", image: null });
+    setIsAddingSponsor(true);
+    try {
+      const newSponsorWithImage = { ...newSponsor, image: null }; // Handle image upload separately
+      setNewEvent({
+        ...newEvent,
+        sponsors: [...newEvent.sponsors, newSponsorWithImage],
+      });
+      setNewSponsor({ name: "", description: "", website: "", image: null });
+    } catch (error) {
+      console.error("Failed to add sponsor:", error);
+    } finally {
+      setIsAddingSponsor(false);
+    }
   };
 
   const handleDeleteSponsor = (index) => {
@@ -120,23 +149,35 @@ const Events = () => {
   };
 
   const handleAddLink = () => {
-    setNewEvent({
-      ...newEvent,
-      otherLinks: [...newEvent.otherLinks, newLink],
-    });
-    setNewLink({ title: "", url: "" });
+    setIsAddingLink(true);
+    try {
+      setNewEvent({
+        ...newEvent,
+        otherLinks: [...newEvent.otherLinks, newLink],
+      });
+      setNewLink({ title: "", url: "" });
+    } catch (error) {
+      console.error("Failed to add link:", error);
+    } finally {
+      setIsAddingLink(false);
+    }
   };
-
   const handleDeleteLink = (index) => {
     const updatedLinks = newEvent.otherLinks.filter((_, i) => i !== index);
     setNewEvent({ ...newEvent, otherLinks: updatedLinks });
   };
 
   const handleAddEvent = async () => {
+    setIsAddingEvent(true);
     try {
-      const headers = { Authorization: `Bearer ${authState.token}`, "Content-Type": "multipart/form-data" };
-      const combinedDateTime = new Date(`${newEvent.date}T${newEvent.time}`).toISOString();
-  
+      const headers = {
+        Authorization: `Bearer ${authState.token}`,
+        "Content-Type": "multipart/form-data",
+      };
+      const combinedDateTime = new Date(
+        `${newEvent.date}T${newEvent.time}`
+      ).toISOString();
+
       const formData = new FormData();
       formData.append("title", newEvent.title);
       formData.append("description", newEvent.description);
@@ -145,22 +186,20 @@ const Events = () => {
       formData.append("day", newEvent.day);
       formData.append("durationHours", newEvent.durationHours);
       formData.append("registrationLink", newEvent.registrationLink);
-  
+
       if (newEvent.image) {
         formData.append("image", newEvent.image);
       }
-  
-      newEvent.sponsorImages.forEach((image, index) => {
-        formData.append(`sponsorImages`, image);  // Ensure the backend expects "sponsorImages"
+
+      newEvent.sponsorImages.forEach((image) => {
+        formData.append(`sponsorImages`, image); // Ensure the backend expects "sponsorImages"
       });
-  
+
       formData.append("sponsors", JSON.stringify(newEvent.sponsors));
       formData.append("otherLinks", JSON.stringify(newEvent.otherLinks));
-  
-      console.log([...formData.entries()]);  // Check the form data being sent
-  
+
       await axi.post("/event/create-event", formData, { headers });
-  
+
       setEvents([...events, { ...newEvent, id: events.length + 1 }]);
       setNewEvent({
         title: "",
@@ -176,15 +215,16 @@ const Events = () => {
         sponsors: [],
         otherLinks: [],
       });
-  
+
       const response = await axi.get("/event/get-all-events", { headers });
       setEvents(response.data);
       onClose();
     } catch (error) {
       console.error("Failed to add event:", error);
+    } finally {
+      setIsAddingEvent(false);
     }
   };
-  
 
   const handleDeleteEvent = async (eventId) => {
     try {
@@ -397,7 +437,11 @@ const Events = () => {
                     })
                   }
                 />
-                <Button mt={2} onClick={handleAddSponsor}>
+                <Button
+                  mt={2}
+                  onClick={handleAddSponsor}
+                  isLoading={isAddingSponsor}
+                >
                   Add Sponsor
                 </Button>
               </Box>
@@ -438,7 +482,7 @@ const Events = () => {
                     setNewLink({ ...newLink, url: e.target.value })
                   }
                 />
-                <Button mt={2} onClick={handleAddLink}>
+                <Button mt={2} onClick={handleAddLink} isLoading={isAddingLink}>
                   Add Link
                 </Button>
               </Box>
@@ -448,7 +492,11 @@ const Events = () => {
             <Button variant="ghost" mr={3} onClick={onClose}>
               Close
             </Button>
-            <Button colorScheme="green" onClick={handleAddEvent}>
+            <Button
+              colorScheme="green"
+              onClick={handleAddEvent}
+              isLoading={isAddingEvent} // <-- Loader added here
+            >
               Add Event
             </Button>
           </ModalFooter>
