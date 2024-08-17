@@ -32,7 +32,6 @@ import { useEffect, useState } from "react";
 import { axi } from "../context/AuthContext";
 import { useAuth } from "../context/AuthContext";
 
-
 /**
  * @typedef {Object} PersonnelData
  * @property {string} id
@@ -47,7 +46,7 @@ const Personnel = () => {
   const [personnel, setPersonnel] = useState([]);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
-  const toast = useToast()
+  const toast = useToast();
 
   const getPersonnel = async () => {
     try {
@@ -71,6 +70,7 @@ const Personnel = () => {
       await axi.post("/admin/add-admin", { email }, { headers });
       const response = await axi.get("/admin/get-users", { headers });
       setPersonnel(response.data.filter((data) => data.role === "admin"));
+      onClose()
     } catch (error) {
       console.error("Failed to add personnel:", error);
       if (error.response) {
@@ -82,7 +82,7 @@ const Personnel = () => {
             duration: 5000,
             isClosable: true,
           });
-        }else if(error.response.status === 400) {
+        } else if (error.response.status === 400) {
           toast({
             title: "Validation Error",
             description: "User doesn't exist or already an admin.",
@@ -108,6 +108,31 @@ const Personnel = () => {
           isClosable: true,
         });
       }
+    }
+  };
+
+  const deleteAdmin = async(id) => {
+    try {
+      await axi.patch(`/admin/revoke-admin-status/${id}`);
+      toast({
+        title: "Success",
+        description: "Personnel deleted successfully.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+      const headers = { Authorization: `Bearer ${authState.token}` };
+      const response = await axi.get("/admin/get-users", { headers });
+      setPersonnel(response.data.filter((data) => data.role === "admin"));
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "Error",
+        description: "Failed to delete personnel. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -160,7 +185,7 @@ const Personnel = () => {
                 <Td>{data.full_name}</Td>
                 <Td>{data.email}</Td>
                 <Td>{data.role}</Td>
-                <Td>
+                <Td onClick={()=>deleteAdmin(data.id)}>
                   <DeleteIcon />
                 </Td>
               </Tr>

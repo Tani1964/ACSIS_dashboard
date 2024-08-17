@@ -30,21 +30,29 @@ const Header = () => {
   const navigate = useNavigate()
   useEffect(() => {
     const getUser = async () => {
-      try{
+      try {
         const token = await localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
-      const response = await axi.get("/admin/get-user", { headers });
-      setUser(response.data.user);
-      }catch(e){
-        console.log(e.status)
-        if (e.status === 401){
-          setAuthInfo(null)
-          navigate("/login")
+        const headers = { Authorization: `Bearer ${token}` };
+        const response = await axi.get("/admin/get-user", { headers });
+        setUser(response.data.user);
+      } catch (e) {
+        if (e.response?.status === 401) {
+          setAuthInfo(null);
+          navigate("/login");
+        } else if (e.response?.status === 403 && e.response.data.message === "Access denied. Please use a desktop client.") {
+          // Handle the 403 error specifically
+          console.error("Access denied. Please use a desktop client.");
+          // Optionally, navigate to a different page or show a message to the user
+          navigate("/access-denied"); // Example
+        } else {
+          console.error("An unexpected error occurred:", e);
         }
       }
     };
     getUser();
   }, [setUserInfo]);
+  
+
   const handleLogout = async() =>{
     setAuthInfo(null)
   }
