@@ -22,6 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, axi } from "../context/AuthContext";
+import * as XLSX from "xlsx";
 
 const Pitches = () => {
   const [pitches, setPitches] = useState([]);
@@ -60,6 +61,26 @@ const Pitches = () => {
     applyFilters();
   }, [filter, statusFilter, pitches]);
 
+  const exportToExcel = () => {
+    const worksheetData = filteredPitches.map((data) => ({
+      // "Date Enrolled": filteredMeeting.dateEnrolled,
+      "Fullname": data.user?.full_name,
+      "Email": data.user?.email,
+      "Reviewer": data.review.reviewer_name,
+      "Status": data.review.review_status ,
+      "Date Submitted": Date(data.review.updated_at).toLocaleDateString(),
+
+      // "updated at": filteredMeeting.review?.updated_at,
+      // Owner: "ACSIS",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pitches Data");
+
+    XLSX.writeFile(wb, "pitches.xlsx");
+  };
+
   const changeStatus = async (status, id) => {
     try {
       const headers = { Authorization: `Bearer ${authState.token}` };
@@ -91,27 +112,27 @@ const Pitches = () => {
     if (filter === "last-week") {
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(now.getDate() - 7);
-      filtered = filtered.filter(pitch =>
-        new Date(pitch.review.updated_at) >= oneWeekAgo
+      filtered = filtered.filter(
+        (pitch) => new Date(pitch.review.updated_at) >= oneWeekAgo
       );
     } else if (filter === "month") {
       const oneMonthAgo = new Date();
       oneMonthAgo.setMonth(now.getMonth() - 1);
-      filtered = filtered.filter(pitch =>
-        new Date(pitch.review.updated_at) >= oneMonthAgo
+      filtered = filtered.filter(
+        (pitch) => new Date(pitch.review.updated_at) >= oneMonthAgo
       );
     } else if (filter === "year") {
       const oneYearAgo = new Date();
       oneYearAgo.setFullYear(now.getFullYear() - 1);
-      filtered = filtered.filter(pitch =>
-        new Date(pitch.review.updated_at) >= oneYearAgo
+      filtered = filtered.filter(
+        (pitch) => new Date(pitch.review.updated_at) >= oneYearAgo
       );
     }
 
     // Apply status filter
     if (statusFilter !== "all") {
-      filtered = filtered.filter(pitch =>
-        pitch.review.review_status.toLowerCase() === statusFilter
+      filtered = filtered.filter(
+        (pitch) => pitch.review.review_status.toLowerCase() === statusFilter
       );
     }
 
@@ -141,22 +162,42 @@ const Pitches = () => {
   return (
     <Box className="px-6 py-4">
       <Box>
-        <Heading>Pitches</Heading>
-        <Text color={"grey"}>
-          An overview of the status of all pitched ideas
-        </Text>
+        <Flex className="justify-between items-center">
+          <Box>
+            <Heading>Pitches</Heading>
+            <Text color={"grey"}>
+              An overview of the status of all pitched ideas
+            </Text>
+          </Box>
+          <Button
+            colorScheme="green"
+            variant={"outline"}
+            onClick={exportToExcel}
+            size={"sm"}
+          >
+            Export to Excel
+          </Button>
+        </Flex>
         <Flex className="flex flex-row justify-between mt-5 py-4">
           <Text color={"grey"} fontWeight={20}>
             {filteredPitches.length} Pitches
           </Text>
           <Flex gap={4}>
-            <Select value={filter} onChange={handleFilterChange} maxWidth="200px">
+            <Select
+              value={filter}
+              onChange={handleFilterChange}
+              maxWidth="200px"
+            >
               <option value="all">All</option>
               <option value="last-week">Last Week</option>
               <option value="month">Month</option>
               <option value="year">Year</option>
             </Select>
-            <Select value={statusFilter} onChange={handleStatusFilterChange} maxWidth="200px">
+            <Select
+              value={statusFilter}
+              onChange={handleStatusFilterChange}
+              maxWidth="200px"
+            >
               <option value="all">All Status</option>
               <option value="approved">Approved</option>
               <option value="pending">Pending</option>
@@ -201,7 +242,8 @@ const Pitches = () => {
                       colorScheme={
                         data.review.review_status.toLowerCase() === "approved"
                           ? "green"
-                          : data.review.review_status.toLowerCase() === "pending"
+                          : data.review.review_status.toLowerCase() ===
+                            "pending"
                           ? "orange"
                           : "red"
                       }
@@ -224,12 +266,11 @@ const Pitches = () => {
                 </Td>
                 <Td>{data.review.reviewer_name || "Not yet reviewed"}</Td>
                 <Td>
-                  {new Date(data.review.updated_at).toLocaleDateString() || "N/A"}
+                  {new Date(data.review.updated_at).toLocaleDateString() ||
+                    "N/A"}
                 </Td>
                 <Td>
-                  <Button onClick={() => viewPitch(data.id)}>
-                    View Pitch
-                  </Button>
+                  <Button onClick={() => viewPitch(data.id)}>View Pitch</Button>
                 </Td>
               </Tr>
             ))}

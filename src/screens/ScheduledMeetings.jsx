@@ -30,6 +30,7 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, axi } from "../context/AuthContext";
+import * as XLSX from "xlsx";
 
 const ScheduledMeetings = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -40,6 +41,7 @@ const ScheduledMeetings = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [companyProfile, setCompanyProfile] = useState("");
   const { authState } = useAuth();
   const navigate = useNavigate();
 
@@ -66,6 +68,27 @@ const ScheduledMeetings = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+ 
+
+  const exportToExcel = () => {
+    const worksheetData = filteredMeetings.map((filteredMeeting) => ({
+      // "Date Enrolled": filteredMeeting.dateEnrolled,
+      "Proposer's Fullname": filteredMeeting.proposer?.full_name,
+      "Proposer's email": filteredMeeting.proposer?.email,
+      "Company's profile": filteredMeeting.company_profile ,
+      "Reason for meeting": filteredMeeting.description  ,
+      
+      // "updated at": filteredMeeting.review?.updated_at,
+      // Owner: "ACSIS",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Scheduled Meetings");
+
+    XLSX.writeFile(wb, "scheduled_meetings.xlsx");
   };
 
   useEffect(() => {
@@ -127,7 +150,8 @@ const ScheduledMeetings = () => {
     // Apply status filter
     if (statusFilter !== "all") {
       filtered = filtered.filter(
-        (meeting) => meeting.review?.review_status.toLowerCase() === statusFilter
+        (meeting) =>
+          meeting.review?.review_status.toLowerCase() === statusFilter
       );
     }
 
@@ -157,10 +181,22 @@ const ScheduledMeetings = () => {
   return (
     <Box className="px-6 py-4">
       <Box>
-        <Heading>Scheduled Meetings</Heading>
-        <Text color={"grey"}>
-          An overview of the status of all scheduled meetings
-        </Text>
+        <Flex className="justify-between items-center">
+          <Box>
+            <Heading>Scheduled Meetings</Heading>
+            <Text color={"grey"}>
+              An overview of the status of all scheduled meetings
+            </Text>
+          </Box>
+          <Button
+            colorScheme="green"
+            variant={"outline"}
+            onClick={exportToExcel}
+            size={"sm"}
+          >
+            Export to Excel
+          </Button>
+        </Flex>
         <Flex className="flex flex-row justify-between mt-5 py-4">
           <Text color={"grey"} fontWeight={20}>
             {filteredMeetings.length} Meetings
@@ -225,7 +261,8 @@ const ScheduledMeetings = () => {
                         variant={"outline"}
                         size={"sm"}
                         colorScheme={
-                          data.review?.review_status.toLowerCase() === "approved"
+                          data.review?.review_status.toLowerCase() ===
+                          "approved"
                             ? "green"
                             : data.review?.review_status.toLowerCase() ===
                               "pending"
@@ -258,7 +295,12 @@ const ScheduledMeetings = () => {
                     <Button
                       onClick={() => {
                         setName(data.proposer?.full_name || "N/A");
-                        setDescription(data.description || "No description available");
+                        setDescription(
+                          data.description || "No description available"
+                        );
+                        setCompanyProfile(
+                          data.company_profile || "No profile available"
+                        );
                         onOpen();
                       }}
                     >
@@ -275,8 +317,16 @@ const ScheduledMeetings = () => {
         <ModalContent>
           <ModalHeader>{name} Meeting Proposal</ModalHeader>
           <ModalCloseButton />
+
           <ModalBody>
-            {description}
+            <Box>
+              <Text fontWeight="bold">Proposal:</Text>
+              <Text>{description}</Text>
+            </Box>
+            <Box>
+              <Text fontWeight="bold">Company Profile:</Text>
+              <Text>{companyProfile}</Text>
+            </Box>
           </ModalBody>
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={onClose}>
