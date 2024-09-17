@@ -34,6 +34,7 @@ import { useAuth } from "../context/AuthContext";
 import { axi } from "../context/AuthContext";
 import DateTime from "react-datetime";
 import "react-datetime/css/react-datetime.css";
+import * as XLSX from "xlsx";
 
 const Events = () => {
   const { authState } = useAuth();
@@ -65,6 +66,7 @@ const Events = () => {
   const [isAddingEvent, setIsAddingEvent] = useState(false);
   const [isAddingSponsor, setIsAddingSponsor] = useState(false);
   const [isAddingLink, setIsAddingLink] = useState(false);
+
 
   useEffect(() => {
     const getEvents = async () => {
@@ -236,6 +238,27 @@ const Events = () => {
     }
   };
 
+  const exportToExcel = () => {
+    const worksheetData = events.map((event) => ({
+      // "Date Enrolled": filteredMeeting.dateEnrolled,
+      "Event's Title": event.title,
+      "Event's Day": event.day,
+      "Event's Description": event.description,
+      "Event's Registration Link": event.registrationLink,
+      "Event's Date/Time":(event.date_time).toLocaleDateString(),
+      "Event's Location": event.location,
+      
+      // "updated at": filteredMeeting.review?.updated_at,
+      Owner: "ACSIS",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Events");
+
+    XLSX.writeFile(wb, "events.xlsx");
+  };
+
   if (loading) {
     return (
       <Center height="100vh">
@@ -253,10 +276,19 @@ const Events = () => {
           <Text color="gray.500" fontWeight="bold">
             {events.length} Events
           </Text>
+          <Flex gap={4}>
+          <Button
+            colorScheme="green"
+            variant={"outline"}
+            onClick={exportToExcel}
+            size={"md"}
+          >
+            Export to Excel
+          </Button>
           <Button colorScheme="green" size="md" gap={2} onClick={onOpen}>
             <AiOutlineUsergroupAdd />
             Add New Event
-          </Button>
+          </Button></Flex>
         </Flex>
       </Box>
 

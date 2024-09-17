@@ -31,6 +31,7 @@ import { AiOutlineUsergroupAdd } from "react-icons/ai";
 import { DeleteIcon } from "@chakra-ui/icons";
 import { useAuth } from "../context/AuthContext";
 import { axi } from "../context/AuthContext";
+import * as XLSX from "xlsx";
 
 const Businesses = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -135,6 +136,27 @@ const Businesses = () => {
     }
   };
 
+  const exportToExcel = () => {
+    const worksheetData = data.map((data) => ({
+      // "Date Enrolled": filteredMeeting.dateEnrolled,
+      "Business's name": data.business_name,
+      "Business owner's name": data.business_owner_name,
+      "Business owner's email": data.business_owner_email ,
+      "Business owner's phone": data.business_owner_phone ,
+      "Business's description": data.business_description  ,
+      "Business's website": data.website  ,
+      
+      // "updated at": filteredMeeting.review?.updated_at,
+      Owner: "ACSIS",
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(worksheetData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Scheduled Meetings");
+
+    XLSX.writeFile(wb, "scheduled_meetings.xlsx");
+  };
+
   if (loading) {
     return (
       <Center height="100vh">
@@ -151,9 +173,18 @@ const Businesses = () => {
         <Text color="gray.500" fontWeight="bold">
           {data.length} Businesses
         </Text>
+        <Flex gap={4}>
+        <Button
+            colorScheme="green"
+            variant={"outline"}
+            onClick={exportToExcel}
+            size={"md"}
+          >
+            Export to Excel
+          </Button>
         <Button colorScheme="green" onClick={onOpen} leftIcon={<AiOutlineUsergroupAdd />}>
           Add New Business
-        </Button>
+        </Button></Flex>
       </Flex>
 
       <Box overflowY="auto" maxHeight="55vh">

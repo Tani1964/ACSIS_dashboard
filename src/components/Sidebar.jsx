@@ -21,6 +21,7 @@ import {
 import { FaLightbulb, FaBuilding } from "react-icons/fa";
 import { useAuth, axi } from "../context/AuthContext";
 import { Link as RouterLink } from "react-router-dom";
+import { FaUserGroup } from "react-icons/fa6";
 
 const Sidebar = () => {
   const [user, setUser] = useState({});
@@ -57,6 +58,7 @@ const Sidebar = () => {
       key: "scheduledMeetings",
     },
     { name: "Awards", icon: FiAward, to: "/awards", key: "awards" },
+    { name: "Sponsors", icon: FaUserGroup, to: "/sponsors", key: "sponsors" },
     { name: "Personnel", icon: FiSettings, to: "/personnel", key: "personnel" },
   ];
 
@@ -103,7 +105,7 @@ const Sidebar = () => {
             <Divider />
 
             <VStack spacing="3" align="start">
-              {links.slice(0, 6).map((link) => (
+              {links.slice(0, 7).map((link) => (
                 <Link
                   as={RouterLink}
                   to={link.to}
@@ -128,7 +130,7 @@ const Sidebar = () => {
           {user?.role === "superadmin" && (
             <VStack spacing="3" align="start">
               <Divider />
-              {links.slice(6).map((link) => (
+              {links.slice(7).map((link) => (
                 <Link
                   as={RouterLink}
                   to={link.to}

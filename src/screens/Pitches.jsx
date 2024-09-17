@@ -71,7 +71,7 @@ const Pitches = () => {
       "Date Submitted": Date(data.review.updated_at).toLocaleDateString(),
 
       // "updated at": filteredMeeting.review?.updated_at,
-      // Owner: "ACSIS",
+      Owner: "ACSIS",
     }));
 
     const ws = XLSX.utils.json_to_sheet(worksheetData);
