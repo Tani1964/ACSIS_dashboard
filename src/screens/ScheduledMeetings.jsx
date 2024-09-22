@@ -226,7 +226,7 @@ const ScheduledMeetings = () => {
         </Flex>
       </Box>
 
-      <Box overflowY="auto" maxHeight="55vh">
+      <Box overflowY="auto" maxHeight="40vh" maxWidth={"78vw"}>
         <Table>
           <TableCaption>Meetings</TableCaption>
           <Thead

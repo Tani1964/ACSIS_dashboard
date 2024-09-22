@@ -59,6 +59,7 @@ const Personal = () => {
 
   return (
     <Box>
+      
       <PitchOptions id={id} route={"personal"} state={"pending"} />
       <Box overflowY={"scroll"} height={"50vh"} paddingLeft={4}>
         <Box mb={4} display={"flex"} gap={4}>

@@ -292,10 +292,14 @@ const Events = () => {
         </Flex>
       </Box>
 
-      <Box overflowY="auto" maxHeight="60vh">
-        <Table position="sticky" top="0" bg="white" zIndex="1" roundedTop={10}>
+      <Box  overflowY="auto" maxHeight="40vh" maxWidth={"78vw"}>
+        <Table>
           <TableCaption>All Events</TableCaption>
-          <Thead>
+          <Thead position="sticky"
+            top="0"
+            bg="white"
+            zIndex="1"
+            roundedTop={10}>
             <Tr bg="#F6F7FB" border="1px solid #EAECF0">
               <Th>S/N</Th>
               <Th>Event Title</Th>

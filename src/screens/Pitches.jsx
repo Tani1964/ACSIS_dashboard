@@ -207,7 +207,7 @@ const Pitches = () => {
         </Flex>
       </Box>
 
-      <Box overflowY="auto" maxHeight="55vh">
+      <Box overflowY="auto" maxHeight="40vh" maxWidth={"78vw"}>
         <Table>
           <TableCaption>Pitches</TableCaption>
           <Thead
@@ -219,6 +219,7 @@ const Pitches = () => {
           >
             <Tr className="bg-[#F6F7FB] border border-[#EAECF0]">
               <Th>S/N</Th>
+              <Th>Id</Th>
               <Th>Name</Th>
               <Th>Email</Th>
               <Th>Status</Th>
@@ -231,6 +232,7 @@ const Pitches = () => {
             {filteredPitches.map((data, index) => (
               <Tr key={data.id}>
                 <Td>{index + 1}</Td>
+                <Td>#{data.uid}</Td>
                 <Td>{data.user?.full_name || "N/A"}</Td>
                 <Td>{data.user?.email || "N/A"}</Td>
                 <Td>

@@ -187,7 +187,7 @@ const Businesses = () => {
         </Button></Flex>
       </Flex>
 
-      <Box overflowY="auto" maxHeight="55vh">
+      <Box overflow="auto" maxHeight="40vh" maxWidth={"78vw"}>
         <Table>
           <TableCaption>Businesses</TableCaption>
           <Thead position="sticky" top={0} bg="white" zIndex={1}>
