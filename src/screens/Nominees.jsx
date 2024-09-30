@@ -63,7 +63,7 @@ const Nominees = () => {
               {nominee.user_nominee
                 ? nominee.user_nominee.full_name
                 : nominee.business_nominee
-                ? nominee.business_nominee.full_name
+                ? nominee.business_nominee.business_name
                 : pitchNames[nominee.pitch_nominee?.id] || "Loading..."}
             </Text>
             <Text fontWeight="light">Category: {nominee.nominee_type}</Text>
