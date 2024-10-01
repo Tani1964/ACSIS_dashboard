@@ -13,32 +13,29 @@ import Personal from "./screens/Personal";
 import Professional from "./screens/Professional";
 import Competition from "./screens/Competition";
 import Notifications from "./screens/Notifications";
-import Login from "./screens/Login"
+import Login from "./screens/Login";
 import { useAuth } from "./context/AuthContext";
 import Businesses from "./screens/Businesses";
-import Technical from "./screens/Technical"
+import Technical from "./screens/Technical";
 import ScheduledMeetings from "./screens/ScheduledMeetings";
-import Awards from "./screens/Awards"
+import Awards from "./screens/Awards";
 import Nominees from "./screens/Nominees";
 import AccessDenied from "./screens/AccessDenied";
 import Sponsors from "./screens/Sponsors";
+import Terms from "./screens/Privacy";
 
 const isAuthenticated = () => {
-  // Replace this with your actual authentication logic
-  const {authState} = useAuth();
-  console.log(authState.token)
-  return authState.token? true : false;
+  const { authState } = useAuth();
+  return authState.token ? true : false;
 };
 
 const ProtectedRoute = ({ element }) => {
-  console.log(isAuthenticated())
-  
   return isAuthenticated() ? element : <Navigate to="/login" />;
 };
 
 const Screens = () => {
   return (
-    <Flex  overflowX={"clip"}>
+    <Flex overflowX={"clip"}>
       <Sidebar />
       <Box flex="1">
         <Header />
@@ -53,7 +50,7 @@ const Screens = () => {
             <Route path="/pitch/:id" element={<ProtectedRoute element={<Personal />} />} />
             <Route path="/pitch/professional/:id" element={<ProtectedRoute element={<Professional />} />} />
             <Route path="/pitch/competition/:id" element={<ProtectedRoute element={<Competition />} />} />
-            <Route path="/pitch/technical/:id" element={<ProtectedRoute element={<Technical/>} />} />
+            <Route path="/pitch/technical/:id" element={<ProtectedRoute element={<Technical />} />} />
             <Route path="/notifications" element={<ProtectedRoute element={<Notifications />} />} />
             <Route path="/scheduledMeetings" element={<ProtectedRoute element={<ScheduledMeetings />} />} />
             <Route path="/awards" element={<ProtectedRoute element={<Awards />} />} />
@@ -72,7 +69,13 @@ const App = () => {
     <ChakraProvider>
       <BrowserRouter>
         <Routes>
+          {/* Unprotected Privacy Route */}
+          <Route path="/privacy" element={<Terms />} />
+
+          {/* Protected Screens */}
           <Route path="/*" element={<Screens />} />
+
+          {/* Public Login Route */}
           <Route path="/login" element={<Login />} />
         </Routes>
       </BrowserRouter>
