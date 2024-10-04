@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { axi } from "../context/AuthContext";
 
@@ -41,7 +41,7 @@ const DeleteAccount = () => {
         alert("Login failed. Please check your credentials.");
       }
     } catch (error) {
-      alert("Failed to delete account. Please try again.");
+      alert(`Failed to delete account. Please try again.\n${error.response.data.message}`);
       console.error("Account deletion error:", error);
     } finally {
       setLoading(false);
