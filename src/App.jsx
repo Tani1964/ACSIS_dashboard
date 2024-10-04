@@ -23,6 +23,7 @@ import Nominees from "./screens/Nominees";
 import AccessDenied from "./screens/AccessDenied";
 import Sponsors from "./screens/Sponsors";
 import Terms from "./screens/Privacy";
+import DeleteAccount from "./screens/Delete";
 
 const isAuthenticated = () => {
   const { authState } = useAuth();
@@ -71,6 +72,7 @@ const App = () => {
         <Routes>
           {/* Unprotected Privacy Route */}
           <Route path="/privacy" element={<Terms />} />
+          <Route path="/delete" element={<DeleteAccount />} />
 
           {/* Protected Screens */}
           <Route path="/*" element={<Screens />} />
